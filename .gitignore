@@ -4,3 +4,4 @@ stores/vault/file/*
 !stores/vault/file/.gitkeep
 stores/vault/logs/*
 !stores/vault/logs/.gitkeep
+python_flask_app/venv

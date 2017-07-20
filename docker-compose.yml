@@ -20,3 +20,17 @@ services:
     volumes:
       - ./stores/postgresql/data:/var/lib/postgresql/data
       - ./stores/postgresql/entrypoint-initdb.d:/docker-entrypoint-initdb.d
+  flaskapp:
+    image: python:3
+    environment:
+      - VAULT_ROLE_ID_TOKEN
+      - VAULT_SECRET_ID_TOKEN
+    working_dir: /usr/src/app
+    ports:
+      - '80:5000'
+    volumes:
+      - ./python_flask_app/:/usr/src/app
+    command: [ "./run_python_app.sh", "./password_manager.py" ]
+    links:
+      - vault
+      - postgresql

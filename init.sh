@@ -6,7 +6,7 @@ cd "$(dirname "$0")"
 
 . vault_env
 
-docker-compose up -d
+docker-compose up -d vault postgresql
 echo -n 'Giving some time to the services to come online...'
 # shellcheck disable=SC2034
 for i in {1..20}; do
@@ -23,6 +23,23 @@ echo "$VAULT_ROOT_TOKEN" | vault auth -
 
 # Enable Vault auditing
 vault audit-enable file file_path=/vault/logs/audit_log
+
+# Enable Approle authentication
+vault auth-enable approle
+vault policy-write bachmanity_insanity-app - <<'EOF'
+path "database/creds/bachmanity_insanity-*" {
+  policy = "read"
+}
+
+path "auth/token/renew-self" {
+  capabilities = ["update"]
+}
+
+path "sys/lease/*" {
+  capabilities = ["update"]
+}
+EOF
+vault write auth/approle/role/bachmanity_insanity-app secret_id_num_uses=20 token_num_uses=10 policies=bachmanity_insanity-app
 
 # This is a one-time execution per-DB
 cat <<EOF
@@ -58,3 +75,8 @@ vault write database/roles/bachmanity_insanity-readwrite \
         GRANT SELECT, INSERT, UPDATE, DELETE ON public.staff TO \"{{name}}\";" \
     default_ttl="1m" \
     max_ttl="1h"
+
+export VAULT_ROLE_ID_TOKEN="$(vault read -wrap-ttl="5m" -field=wrapping_token auth/approle/role/bachmanity_insanity-app/role-id)"
+export VAULT_SECRET_ID_TOKEN="$(vault write -wrap-ttl="5m" -field=wrapping_token -f auth/approle/role/bachmanity_insanity-app/secret-id)"
+
+docker-compose up flaskapp
