@@ -1,0 +1,22 @@
+---
+version: '3'
+services:
+  vault:
+    image: vault:latest
+    ports:
+      - '8200:8200'
+    volumes:
+      - ./stores/vault/logs:/vault/logs
+      - ./stores/vault/file:/vault/file
+    links:
+      - postgresql
+  postgresql:
+    image: postgres:9
+    environment:
+      - POSTGRES_USER=dbadmin
+      - POSTGRES_PASSWORD=dbadmin_password
+      - POSTGRES_DB=bachmanity_insanity
+      - PGDATA=/var/lib/postgresql/data/bachmanity_insanity
+    volumes:
+      - ./stores/postgresql/data:/var/lib/postgresql/data
+      - ./stores/postgresql/entrypoint-initdb.d:/docker-entrypoint-initdb.d

@@ -1,0 +1,2 @@
+stores/postgresql/data/*
+!stores/postgresql/data/.gitkeep

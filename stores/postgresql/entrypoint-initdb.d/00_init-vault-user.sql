@@ -1,0 +1,2 @@
+CREATE ROLE vault WITH LOGIN ENCRYPTED PASSWORD 'secret_password_for_vault' CREATEROLE;
+GRANT CONNECT ON DATABASE "bachmanity_insanity" TO "vault" WITH GRANT OPTION;

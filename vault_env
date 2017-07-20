@@ -1,0 +1,5 @@
+export VAULT_ADDR='http://127.0.0.1:8200'
+
+#alias psql='docker-compose exec -u postgres postgresql psql'
+#alias pg_users="docker-compose exec -u postgres postgresql psql -c "\dg+;"'
+#alias pg_contents='docker-compose exec -u postgres postgresql psql -d bachmanity_insanity -c "SELECT * FROM public.staff;"'
