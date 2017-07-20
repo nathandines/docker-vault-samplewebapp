@@ -7,8 +7,8 @@ cd "$(dirname "$0")"
 . vault_env
 
 docker-compose up -d
-
 echo -n 'Giving some time to the services to come online...'
+# shellcheck disable=SC2034
 for i in {1..20}; do
   echo -n '.'
   sleep 1
