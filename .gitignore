@@ -1,2 +1,6 @@
 stores/postgresql/data/*
 !stores/postgresql/data/.gitkeep
+stores/vault/file/*
+!stores/vault/file/.gitkeep
+stores/vault/logs/*
+!stores/vault/logs/.gitkeep

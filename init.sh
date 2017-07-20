@@ -20,6 +20,10 @@ VAULT_ROOT_TOKEN="$(docker-compose logs vault | grep -oP '(?<=Root Token: )[0-9a
 
 echo "Authenticating against Vault using root token ${VAULT_ROOT_TOKEN}..."
 echo "$VAULT_ROOT_TOKEN" | vault auth -
+
+# Enable Vault auditing
+vault audit-enable file file_path=/vault/logs/audit_log
+
 # This is a one-time execution per-DB
 cat <<EOF
 ---
