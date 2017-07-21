@@ -30,16 +30,8 @@ vault policy-write bachmanity_insanity-app - <<'EOF'
 path "database/creds/bachmanity_insanity-*" {
   policy = "read"
 }
-
-path "auth/token/renew-self" {
-  capabilities = ["update"]
-}
-
-path "sys/lease/*" {
-  capabilities = ["update"]
-}
 EOF
-vault write auth/approle/role/bachmanity_insanity-app secret_id_num_uses=20 token_num_uses=10 policies=bachmanity_insanity-app
+vault write auth/approle/role/bachmanity_insanity-app secret_id_num_uses=1 policies=bachmanity_insanity-app
 
 # This is a one-time execution per-DB
 cat <<EOF
