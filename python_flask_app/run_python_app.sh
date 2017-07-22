@@ -7,14 +7,24 @@ fi
 . venv/bin/activate
 pip install -r ./requirements.txt
 
-case $(uname -m) in
+VAULT_VERSION="${VAULT_VERSION:-0.7.3}"
+CT_VERSION="${CT_VERSION:-0.19.0}"
+
+case $HOSTTYPE in
   x86_64) ARCH="amd64";;
+  i?86) ARCH="386";;
+  armv?l) ARCH="arm";;
+esac
+
+case $OSTYPE in
+  darwin*) OS="darwin";;
+  linux*) OS="linux";;
 esac
 
 apt-get update && apt-get install -q unzip
-wget -q "https://releases.hashicorp.com/vault/0.7.3/vault_0.7.3_linux_${ARCH}.zip" -O '/tmp/vault.zip' && \
+wget -q "https://releases.hashicorp.com/vault/${VAULT_VERSION}/vault_${VAULT_VERSION}_${OS}_${ARCH}.zip" -O '/tmp/vault.zip' && \
   unzip '/tmp/vault.zip' -d '/usr/local/bin' && rm -f '/tmp/vault.zip'
-wget -q "https://releases.hashicorp.com/consul-template/0.19.0/consul-template_0.19.0_linux_${ARCH}.zip" -O '/tmp/consul-template.zip' && \
+wget -q "https://releases.hashicorp.com/consul-template/${CT_VERSION}/consul-template_${CT_VERSION}_${OS}_${ARCH}.zip" -O '/tmp/consul-template.zip' && \
   unzip '/tmp/consul-template.zip' -d '/usr/local/bin' && rm -f '/tmp/consul-template.zip'
 
 export VAULT_ADDR='http://vault:8200'

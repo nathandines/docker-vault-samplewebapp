@@ -29,17 +29,17 @@
       <h3>List of Current People</h3>
       <table>
         <tr>
-          {% for header in db_result[0] %}
+          {% for header in db_result[0] -%}
           <th>{{ header }}</th>
-          {% endfor %}
+          {% endfor -%}
         </tr>
-        {% for result in db_result %}
+        {% for result in db_result -%}
         <tr>
-          {% for attribute in result %}
+          {% for attribute in result -%}
           <td>{{ result[attribute] }}</td>
-          {% endfor %}
+          {% endfor -%}
         </tr>
-        {% endfor %}
+        {% endfor -%}
       </table>
     </div>
   </div>
