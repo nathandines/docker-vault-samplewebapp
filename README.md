@@ -12,6 +12,11 @@ uses to generate a Vault token which `consul-template` maintains the renewal
 for, while a Python webapp hosts a simple people list database; the page also
 exposes some of the database authentication information.
 
+Please be aware that Vault starts in dev mode using an in-memory storage
+backend. This example is not provided to indicate the proper implementation of a
+Vault setup, but rather it suggests how your application could authenticate
+against an already active Vault implementation.
+
 ## Requirements
 
 -   Docker (uses `docker-compose`)
