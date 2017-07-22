@@ -5,7 +5,3 @@ if (vault status &>/dev/null); then
   echo "Authenticating against Vault using root token ${VAULT_ROOT_TOKEN}..."
   echo "$VAULT_ROOT_TOKEN" | vault auth -
 fi
-
-#alias psql='docker-compose exec -u postgres postgresql psql'
-#alias pg_users="docker-compose exec -u postgres postgresql psql -c "\dg+;"'
-#alias pg_contents='docker-compose exec -u postgres postgresql psql -d people_list -c "SELECT * FROM public.staff;"'
