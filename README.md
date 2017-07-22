@@ -12,6 +12,11 @@ uses to generate a Vault token which `consul-template` maintains the renewal
 for, while a Python webapp hosts a simple people list database; the page also
 exposes some of the database authentication information.
 
+## Requirements
+
+-   Docker (uses `docker-compose`)
+-   Vault (binary must be accessible from your `PATH`)
+
 ## How to use
 
 Everything is scripted, so you should be able to get by, by simply doing the following:
