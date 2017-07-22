@@ -14,24 +14,24 @@ def vault_client_setup():
         client
     except NameError:
         client = hvac.Client(url='http://vault:8200')
+
     if not client.is_authenticated():
         if cache.get('vault_token'):
             client.token = cache.get('vault_token')
-            if client.is_authenticated():
-                return client
-            else:
-                cache.set('db_creds_expiry', 0)
-        if not cache.get('vault_role_id'):
+        else:
             role_id_info = client.unwrap(os.environ['VAULT_ROLE_ID_TOKEN'])
-            cache.set('vault_role_id', role_id_info['data']['role_id'])
-        if not cache.get('vault_secret_id'):
             secret_id_info = client.unwrap(os.environ['VAULT_SECRET_ID_TOKEN'])
-            cache.set('vault_secret_id', secret_id_info['data']['secret_id'])
-        auth_response = client.auth_approle(cache.get('vault_role_id'), cache.get('vault_secret_id'))
-        cache.set('vault_token', auth_response['auth']['client_token'])
-        cache.set('vault_token_accessor', auth_response['auth']['accessor'])
+            auth_response = client.auth_approle(role_id_info['data']['role_id'], secret_id_info['data']['secret_id'])
+            cache.set('vault_token', auth_response['auth']['client_token'])
+            client.token = auth_response['auth']['client_token']
+            cache.set('vault_lease_duration', auth_response['auth']['lease_duration'])
+            cache.set('vault_lease_expiry', int(time.time())+auth_response['auth']['lease_duration'])
+
+    # Renew at half-length of age
+    if (cache.get('vault_lease_expiry') - int(time.time())) < (cache.get('vault_lease_duration')/2):
+        auth_response = client.renew_token()
+        cache.set('vault_lease_duration', auth_response['auth']['lease_duration'])
         cache.set('vault_lease_expiry', int(time.time())+auth_response['auth']['lease_duration'])
-        client.token = auth_response['auth']['client_token']
 
     return client
 
@@ -75,7 +75,6 @@ def default_page():
         'creds_expiry': time.strftime("%Z - %Y/%m/%d, %H:%M:%S", time.localtime(cache.get('db_creds_expiry'))),
         'db_creds': json.dumps(db_creds, indent=2),
         'db_result': rows,
-        'vault_token_accessor': cache.get('vault_token_accessor'),
         'vault_lease_expiry': time.strftime("%Z - %Y/%m/%d, %H:%M:%S", time.localtime(cache.get('vault_lease_expiry')))
     }
     return render_template('index.html', **template_params)

@@ -25,7 +25,7 @@ path "database/creds/people_list-*" {
   policy = "read"
 }
 EOF
-vault write auth/approle/role/people_list-app token_ttl=1m token_ttl_max=1m policies=people_list-app
+vault write auth/approle/role/people_list-app secret_id_num_uses=1 token_ttl=5m policies=people_list-app
 
 # This is a one-time execution per-DB
 cat <<EOF
