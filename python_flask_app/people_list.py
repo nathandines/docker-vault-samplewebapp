@@ -14,29 +14,45 @@ def vault_client_setup():
         client
     except NameError:
         client = hvac.Client(url='http://vault:8200')
-        if not client.is_authenticated():
-            if not cache.get('token'):
-                role_id_info = client.unwrap(os.environ['VAULT_ROLE_ID_TOKEN'])
-                secret_id_info = client.unwrap(os.environ['VAULT_SECRET_ID_TOKEN'])
-                auth_response = client.auth_approle(role_id_info['data']['role_id'], secret_id_info['data']['secret_id'])
-                cache.set('token', auth_response['auth']['client_token'])
-            client.token = cache.get('token')
+    if not client.is_authenticated():
+        if cache.get('vault_token'):
+            client.token = cache.get('vault_token')
+            if client.is_authenticated():
+                return client
+            else:
+                cache.set('db_creds_expiry', 0)
+        if not cache.get('vault_role_id'):
+            role_id_info = client.unwrap(os.environ['VAULT_ROLE_ID_TOKEN'])
+            cache.set('vault_role_id', role_id_info['data']['role_id'])
+        if not cache.get('vault_secret_id'):
+            secret_id_info = client.unwrap(os.environ['VAULT_SECRET_ID_TOKEN'])
+            cache.set('vault_secret_id', secret_id_info['data']['secret_id'])
+        auth_response = client.auth_approle(cache.get('vault_role_id'), cache.get('vault_secret_id'))
+        cache.set('vault_token', auth_response['auth']['client_token'])
+        cache.set('vault_token_accessor', auth_response['auth']['accessor'])
+        cache.set('vault_lease_expiry', int(time.time())+auth_response['auth']['lease_duration'])
+        client.token = auth_response['auth']['client_token']
+
     return client
 
 @app.route('/', methods=['GET', 'POST'])
 def default_page():
+    #############################
+    # VAULT AUTH
+    #############################
     client = vault_client_setup()
-    if cache.get('db_creds_result') and int(time.time()) < (cache.get('db_creds_expiry') - 10):
-        result = json.loads(cache.get('db_creds_result'))
-    else:
-        result = client.read('database/creds/bachmanity_insanity-readwrite')
-        cache.set('db_creds_result', json.dumps(result))
-        cache.set('db_creds_expiry', int(time.time()+result["lease_duration"]))
 
-    try:
-        conn = psycopg2.connect(dbname='bachmanity_insanity', user=result['data']['username'], host='postgresql', password=result['data']['password'], sslmode='disable')
-    except:
-        raise RuntimeError("I am unable to connect to the database")
+    if (not cache.get('db_creds_expiry')) or int(time.time()) > (cache.get('db_creds_expiry') - 10):
+        db_creds = client.read('database/creds/bachmanity_insanity-readwrite')
+        cache.set('db_creds_result', json.dumps(db_creds))
+        cache.set('db_creds_expiry', int(time.time()+db_creds["lease_duration"]))
+    else:
+        db_creds = json.loads(cache.get('db_creds_result'))
+
+    #############################
+    # DB ACCESS/USAGE
+    #############################
+    conn = psycopg2.connect(dbname='bachmanity_insanity', user=db_creds['data']['username'], host='postgresql', password=db_creds['data']['password'], sslmode='disable')
 
     # Add data to DB if there is POSTDATA found
     if request.form:
@@ -52,10 +68,15 @@ def default_page():
     rows = [dict(row) for row in sel_cur.fetchall()]
     sel_cur.close()
 
+    #############################
+    # TEMPLATE RENDERING
+    #############################
     template_params = {
         'creds_expiry': time.strftime("%Z - %Y/%m/%d, %H:%M:%S", time.localtime(cache.get('db_creds_expiry'))),
-        'result': json.dumps(result, indent=2),
-        'db_result': rows
+        'db_creds': json.dumps(db_creds, indent=2),
+        'db_result': rows,
+        'vault_token_accessor': cache.get('vault_token_accessor'),
+        'vault_lease_expiry': time.strftime("%Z - %Y/%m/%d, %H:%M:%S", time.localtime(cache.get('vault_lease_expiry')))
     }
     return render_template('index.html', **template_params)
 

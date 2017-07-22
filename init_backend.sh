@@ -26,7 +26,7 @@ path "database/creds/bachmanity_insanity-*" {
   policy = "read"
 }
 EOF
-vault write auth/approle/role/bachmanity_insanity-app secret_id_num_uses=1 policies=bachmanity_insanity-app
+vault write auth/approle/role/bachmanity_insanity-app token_ttl=1m token_ttl_max=1m policies=bachmanity_insanity-app
 
 # This is a one-time execution per-DB
 cat <<EOF
@@ -55,11 +55,11 @@ vault write database/roles/bachmanity_insanity-readonly \
     creation_statements="CREATE ROLE \"{{name}}\" WITH LOGIN PASSWORD '{{password}}' VALID UNTIL '{{expiration}}'; \
         GRANT SELECT ON staff TO \"{{name}}\";" \
     default_ttl="1m" \
-    max_ttl="1h"
+    max_ttl="1m"
 vault write database/roles/bachmanity_insanity-readwrite \
     db_name=bachmanity_insanity \
     creation_statements="CREATE ROLE \"{{name}}\" WITH LOGIN PASSWORD '{{password}}' VALID UNTIL '{{expiration}}'; \
         GRANT SELECT, INSERT, UPDATE, DELETE ON staff TO \"{{name}}\"; \
         GRANT USAGE, SELECT ON SEQUENCE staff_personid_seq TO \"{{name}}\";" \
     default_ttl="1m" \
-    max_ttl="1h"
+    max_ttl="1m"

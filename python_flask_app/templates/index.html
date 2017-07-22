@@ -15,10 +15,12 @@
   </section>
   <div class="content">
     <div class="container">
-      <h3>Database Credentials Result from Vault</h3>
+      <h3>Vault Credential Information</h3>
       <p>Current Time: <span id='ct'/></p>
-      <p>Expiry: {{ creds_expiry }}</p>
-      <pre style="white-space: pre-wrap;">{{ result }}</pre>
+      <p>DB Credentials Expiry: {{ creds_expiry }}</p>
+      <p>Vault Token Accessor: {{ vault_token_accessor }}</p>
+      <p>Vault Token Expiry: {{ vault_lease_expiry }}</p>
+      <pre style="white-space: pre-wrap;">{{ db_creds }}</pre>
       <h3>Person Entry Form</h3>
       <form action="/" method="post">
         Last Name: <input type="text" name="last_name"><br>
