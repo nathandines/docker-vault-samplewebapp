@@ -43,7 +43,7 @@ def default_page():
     client = vault_client_setup()
 
     if (not cache.get('db_creds_expiry')) or int(time.time()) > (cache.get('db_creds_expiry') - 10):
-        db_creds = client.read('database/creds/bachmanity_insanity-readwrite')
+        db_creds = client.read('database/creds/people_list-readwrite')
         cache.set('db_creds_result', json.dumps(db_creds))
         cache.set('db_creds_expiry', int(time.time()+db_creds["lease_duration"]))
     else:
@@ -52,7 +52,7 @@ def default_page():
     #############################
     # DB ACCESS/USAGE
     #############################
-    conn = psycopg2.connect(dbname='bachmanity_insanity', user=db_creds['data']['username'], host='postgresql', password=db_creds['data']['password'], sslmode='disable')
+    conn = psycopg2.connect(dbname='people_list', user=db_creds['data']['username'], host='postgresql', password=db_creds['data']['password'], sslmode='disable')
 
     # Add data to DB if there is POSTDATA found
     if request.form:

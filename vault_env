@@ -8,4 +8,4 @@ fi
 
 #alias psql='docker-compose exec -u postgres postgresql psql'
 #alias pg_users="docker-compose exec -u postgres postgresql psql -c "\dg+;"'
-#alias pg_contents='docker-compose exec -u postgres postgresql psql -d bachmanity_insanity -c "SELECT * FROM public.staff;"'
+#alias pg_contents='docker-compose exec -u postgres postgresql psql -d people_list -c "SELECT * FROM public.staff;"'
