@@ -7,40 +7,14 @@ import json
 import psycopg2
 import psycopg2.extras
 app = Flask(__name__)
-cache = SimpleCache(default_timeout=0)
-
-def vault_client_setup():
-    try:
-        client
-    except NameError:
-        client = hvac.Client(url='http://vault:8200')
-
-    if not client.is_authenticated():
-        if cache.get('vault_token'):
-            client.token = cache.get('vault_token')
-        else:
-            role_id_info = client.unwrap(os.environ['VAULT_ROLE_ID_TOKEN'])
-            secret_id_info = client.unwrap(os.environ['VAULT_SECRET_ID_TOKEN'])
-            auth_response = client.auth_approle(role_id_info['data']['role_id'], secret_id_info['data']['secret_id'])
-            cache.set('vault_token', auth_response['auth']['client_token'])
-            client.token = auth_response['auth']['client_token']
-            cache.set('vault_lease_duration', auth_response['auth']['lease_duration'])
-            cache.set('vault_lease_expiry', int(time.time())+auth_response['auth']['lease_duration'])
-
-    # Renew at half-length of age
-    if (cache.get('vault_lease_expiry') - int(time.time())) < (cache.get('vault_lease_duration')/2):
-        auth_response = client.renew_token()
-        cache.set('vault_lease_duration', auth_response['auth']['lease_duration'])
-        cache.set('vault_lease_expiry', int(time.time())+auth_response['auth']['lease_duration'])
-
-    return client
+cache = SimpleCache(default_timeout=60)
 
 @app.route('/', methods=['GET', 'POST'])
 def default_page():
     #############################
     # VAULT AUTH
     #############################
-    client = vault_client_setup()
+    client = hvac.Client(url=os.environ['VAULT_ADDR'], token=os.environ['VAULT_TOKEN'])
 
     if (not cache.get('db_creds_expiry')) or int(time.time()) > (cache.get('db_creds_expiry') - 10):
         db_creds = client.read('database/creds/people_list-readwrite')
@@ -74,8 +48,7 @@ def default_page():
     template_params = {
         'creds_expiry': time.strftime("%Z - %Y/%m/%d, %H:%M:%S", time.localtime(cache.get('db_creds_expiry'))),
         'db_creds': json.dumps(db_creds, indent=2),
-        'db_result': rows,
-        'vault_lease_expiry': time.strftime("%Z - %Y/%m/%d, %H:%M:%S", time.localtime(cache.get('vault_lease_expiry')))
+        'db_result': rows
     }
     return render_template('index.html', **template_params)
 
