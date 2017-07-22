@@ -4,7 +4,6 @@ set -euo pipefail
 
 cd "$(dirname "$0")"
 
-. vault_env
 
 docker-compose up -d vault postgresql
 echo -n 'Giving some time to the services to come online...'
@@ -15,11 +14,7 @@ for i in {1..20}; do
 done
 echo
 
-vault status
-VAULT_ROOT_TOKEN="$(docker-compose logs vault | grep -oP '(?<=Root Token: )[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}' | tail -1)"
-
-echo "Authenticating against Vault using root token ${VAULT_ROOT_TOKEN}..."
-echo "$VAULT_ROOT_TOKEN" | vault auth -
+. vault_env
 
 # Enable Vault auditing
 vault audit-enable file file_path=/vault/logs/audit_log

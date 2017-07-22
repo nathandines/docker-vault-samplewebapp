@@ -1,5 +1,11 @@
 export VAULT_ADDR='http://127.0.0.1:8200'
 
+if (vault status &>/dev/null); then
+  VAULT_ROOT_TOKEN="$(docker-compose logs vault | grep -oP '(?<=Root Token: )[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}' | tail -1)"
+  echo "Authenticating against Vault using root token ${VAULT_ROOT_TOKEN}..."
+  echo "$VAULT_ROOT_TOKEN" | vault auth -
+fi
+
 #alias psql='docker-compose exec -u postgres postgresql psql'
 #alias pg_users="docker-compose exec -u postgres postgresql psql -c "\dg+;"'
 #alias pg_contents='docker-compose exec -u postgres postgresql psql -d bachmanity_insanity -c "SELECT * FROM public.staff;"'
