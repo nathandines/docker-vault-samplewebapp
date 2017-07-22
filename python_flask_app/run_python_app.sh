@@ -1,7 +1,9 @@
 #!/bin/bash
 
 pip install virtualenv
-virtualenv venv
+if [[ ! -d "venv" ]]; then
+  virtualenv venv
+fi
 . venv/bin/activate
 pip install -r ./requirements.txt
 

@@ -1,8 +1,66 @@
 <!DOCTYPE html>
 <head>
-  <title>Password Manager</title>
+  <title>People List</title>
+  <link rel="stylesheet" type="text/css" href="static/bulma.css" />
 </head>
-<body>
-  <p>Hello World</p>
-  {{ result }}
+<body onload="display_ct();">
+  <section class="hero">
+    <div class="hero-body">
+      <div class="container">
+        <h1 class="title">
+          A List of Some People
+        </h1>
+      </div>
+    </div>
+  </section>
+  <div class="content">
+    <div class="container">
+      <h3>Database Credentials Result from Vault</h3>
+      <p>Current Time: <span id='ct'/></p>
+      <p>Expiry: {{ creds_expiry }}</p>
+      <pre style="white-space: pre-wrap;">{{ result }}</pre>
+      <h3>Person Entry Form</h3>
+      <form action="/" method="post">
+        Last Name: <input type="text" name="last_name"><br>
+        First Name: <input type="text" name="first_name"><br>
+        Company: <input type="text" name="company"><br>
+        <input type="submit" value="Submit">
+      </form>
+      <h3>List of Current People</h3>
+      <table>
+        <tr>
+          {% for header in db_result[0] %}
+          <th>{{ header }}</th>
+          {% endfor %}
+        </tr>
+        {% for result in db_result %}
+        <tr>
+          {% for attribute in result %}
+          <td>{{ result[attribute] }}</td>
+          {% endfor %}
+        </tr>
+        {% endfor %}
+      </table>
+    </div>
+  </div>
+  <script type="text/javascript">
+    function display_c(){
+      var refresh=1000; // Refresh rate in milli seconds
+      mytime=setTimeout('display_ct()',refresh)
+    }
+
+    function display_ct() {
+      var strcount
+      var m = new Date()
+      var x = "UTC - " +
+        m.getUTCFullYear() +"/"+
+        ("0" + (m.getUTCMonth()+1)).slice(-2) +"/"+
+        ("0" + m.getUTCDate()).slice(-2) + ", " +
+        ("0" + m.getUTCHours()).slice(-2) + ":" +
+        ("0" + m.getUTCMinutes()).slice(-2) + ":" +
+        ("0" + m.getUTCSeconds()).slice(-2);
+      document.getElementById('ct').innerHTML = x;
+      tt=display_c();
+    }
+  </script>
 </body>

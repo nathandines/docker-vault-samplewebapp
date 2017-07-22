@@ -58,17 +58,13 @@ EOF
 vault write database/roles/bachmanity_insanity-readonly \
     db_name=bachmanity_insanity \
     creation_statements="CREATE ROLE \"{{name}}\" WITH LOGIN PASSWORD '{{password}}' VALID UNTIL '{{expiration}}'; \
-        GRANT SELECT ON public.staff TO \"{{name}}\";" \
+        GRANT SELECT ON staff TO \"{{name}}\";" \
     default_ttl="1m" \
     max_ttl="1h"
 vault write database/roles/bachmanity_insanity-readwrite \
     db_name=bachmanity_insanity \
     creation_statements="CREATE ROLE \"{{name}}\" WITH LOGIN PASSWORD '{{password}}' VALID UNTIL '{{expiration}}'; \
-        GRANT SELECT, INSERT, UPDATE, DELETE ON public.staff TO \"{{name}}\";" \
+        GRANT SELECT, INSERT, UPDATE, DELETE ON staff TO \"{{name}}\"; \
+        GRANT USAGE, SELECT ON SEQUENCE staff_personid_seq TO \"{{name}}\";" \
     default_ttl="1m" \
     max_ttl="1h"
-
-export VAULT_ROLE_ID_TOKEN="$(vault read -wrap-ttl="5m" -field=wrapping_token auth/approle/role/bachmanity_insanity-app/role-id)"
-export VAULT_SECRET_ID_TOKEN="$(vault write -wrap-ttl="5m" -field=wrapping_token -f auth/approle/role/bachmanity_insanity-app/secret-id)"
-
-docker-compose up flaskapp

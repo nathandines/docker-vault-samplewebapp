@@ -30,7 +30,7 @@ services:
       - '80:5000'
     volumes:
       - ./python_flask_app/:/usr/src/app
-    command: [ "./run_python_app.sh", "./password_manager.py" ]
+    command: [ "./run_python_app.sh", "./people_list.py" ]
     links:
       - vault
       - postgresql
