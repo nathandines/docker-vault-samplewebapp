@@ -33,9 +33,10 @@ VAULT_ROLE_ID="$(vault unwrap -field=role_id "$VAULT_ROLE_ID_TOKEN")"
 VAULT_SECRET_ID="$(vault unwrap -field=secret_id "$VAULT_SECRET_ID_TOKEN")"
 export VAULT_TOKEN="$(vault write -field=token auth/approle/login role_id="$VAULT_ROLE_ID" secret_id="$VAULT_SECRET_ID")"
 consul-template &
+CT_PID=$!
 
 # shellcheck disable=SC2068
 python $@
 
-kill -9 %1 # Kill consul-template
+kill -9 $CT_PID # Kill consul-template
 vault token-revoke -self
